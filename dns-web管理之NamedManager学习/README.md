@@ -26,7 +26,7 @@
 
 ``` bash
     yum-config-manager --add-repo=https://repos.jethrocarr.com/pub/amberdms/linux/centos/7/jethrocarr-custom/x86_64/
-    # 可以手动修改下repo名称什么的,添加
+    # 可以手动修改下repo名称什么的,添加gpgcheck=0
 ```
 
   3. 安装软件
