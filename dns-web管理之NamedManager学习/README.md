@@ -119,7 +119,9 @@
    - 添加反向解析(reverse domain),输入要反向解析的ip端，比如192.168.36.0/24
    - 添加解析记录，在添加好的domains/zones里，正向解析的那行，有domain recored，添加a记录，比如name是www,content是192.168.36.3，勾选reverse PTR之后，会自动添加相应的反向解析
    - 添加成功之后，可以去/var/named/目录查看生成的maleilearn.com.zone以及反向解析用的36.168.192.in-addr.arpa.zone 
-  3. 验证
+  3. 补充-组
+   - 在name server菜单下，有个manage server groups，默认有个default组，经测试，如果有多个bind服务器，且添加的多个nameserver属于同一个组，那为多个nameserver生成的多个zone文件，会同时下发的所有bind服务器，因为它们属于同一个组；比如同一个组下的两个nameserver，生成的文件maleilearn.top.zone  maleilearn.info.zone，在两台bind服务器上都有这两个文件；如果是不同的组，一个服务器上只有一个zone文件
+  4. 验证
    - 方法一： 命令nslookup
 ``` bash
     语法：nslookup   要解析的地址   dns服务器地址
