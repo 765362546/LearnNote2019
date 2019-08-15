@@ -109,19 +109,18 @@
   > 默认的用户名密码  setup/setup123
   > 登录之后，先去修改用户名和密码，比如改成admin/123123什么的
   
-  2. 配置 
-    - 在 configuration 菜单，设置邮箱，设置之前在config-bind.php里配置的api key值
-    - ![configuration界面参考图](images/config.png)
-    - 在 Name Server 菜单，添加新server，设置name server fqdn，即在config-bind配置的api_server_name,设置api key值
-    - ![name server界面参考](images/nameserver.png)
-    - 配置好之后，NamedManager会一分钟同步一次配置文件和日志文件到bind，注意观察server status
-    - 在 Domains/Zones 菜单，添加正向解析(standard domain)，输入域名部分，如maleilearn.com 注意，结尾没有点
-    - 添加反向解析(reverse domain),输入要反向解析的ip端，比如192.168.36.0/24
-
-    - 添加解析记录，在添加好的domains/zones里，正向解析的那行，有domain recored，添加a记录，比如name是www,content是192.168.36.3，勾选reverse PTR之后，会自动添加相应的反向解析
-    - 添加成功之后，可以去/var/named/目录查看生成的maleilearn.com.zone以及反向解析用的36.168.192.in-addr.arpa.zone 
+  2. 配置
+   - 在 configuration 菜单，设置邮箱，设置之前在config-bind.php里配置的api key值
+   - ![configuration界面参考图](images/config.png)
+   - 在 Name Server 菜单，添加新server，设置name server fqdn，即在config-bind配置的api_server_name,设置api key值
+   - ![name server界面参考](images/nameserver.png)
+   - 配置好之后，NamedManager会一分钟同步一次配置文件和日志文件到bind，注意观察server status
+   - 在 Domains/Zones 菜单，添加正向解析(standard domain)，输入域名部分，如maleilearn.com 注意，结尾没有点
+   - 添加反向解析(reverse domain),输入要反向解析的ip端，比如192.168.36.0/24
+   - 添加解析记录，在添加好的domains/zones里，正向解析的那行，有domain recored，添加a记录，比如name是www,content是192.168.36.3，勾选reverse PTR之后，会自动添加相应的反向解析
+   - 添加成功之后，可以去/var/named/目录查看生成的maleilearn.com.zone以及反向解析用的36.168.192.in-addr.arpa.zone 
   3. 验证
-    - 方法一： 命令nslookup
+   - 方法一： 命令nslookup
 ``` bash
     语法：nslookup   要解析的地址   dns服务器地址
     nslookup www.maleilearn.com 192.168.36.190  可以得到192.168.36.3
