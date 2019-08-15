@@ -1,0 +1,439 @@
+摘抄自马哥linux教程
+===========
+DNS: Domain Name Service
+域名：www.magedu.com(主机名，FQDN：Full Qualified Domain Name, 完全限定域名)
+DNS：名称解析，Name Resolving 名称转换（背后有查询过程，数据库）
+	FQDN<-->IP
+	172.16.0.1		www.magedu.com.
+	172.16.0.2		mail.magedu.com.
+	
+nsswitch:
+
+
+hosts: 	files	dns
+file: /etc/hosts
+dns: DNS
+
+stub resolver: 名称解析器	
+
+ping www.magedu.com
+
+hosts: 
+	IPADDR	FQDN	Ailases
+	172.16.0.1	www.magedu.com	www
+	
+	
+	A --> D
+		hosts
+		
+1、周期性任务
+	
+2、Server, Server
+	1KW
+	
+3、分布式数据库
+
+	
+
+
+	
+IANA: IP, FQDN
+	ftp: hosts
+ICANN: 
+
+
+TLD:
+	组织域：.com, .org, .net, .cc
+	国家域: .cn, .tw, .hk, .iq, .ir, .jp
+	反向域: IP-->FQDN
+		反向：IP-->FQDN
+		正向：FQDN-->IP
+
+IP-->FQDN:
+
+FQDN-->IP:
+www.magedu.com.		IP1
+
+查询：
+	递归：只发出一次请求
+	迭代：发出多次请求
+	
+解析：
+	正向：FQDN-->IP
+	反向：IP-->FQDN
+	
+两段式：递归，迭代
+
+DNS：分布式数据库
+	上级仅知道其直接下级；
+	下级只知道根的位置；
+
+DNS服务器：
+	接受本地客户查询请求（递归）
+	外部客户端请求：请求权威答案
+		肯定答案：TTL
+		否定答案：TTL
+	外部客户端请求：非权威答案
+		
+	
+DNS服务器类型
+	主DNS服务器: 数据修改
+	辅助DNS服务器：请求数据同步
+		serial number
+		refresh
+		retry
+		expire
+		nagative answer TTL
+	缓存DNS服务器
+	转发器
+	
+
+
+数据库中的，每一个条目称作一个资源记录(Resource Record, RR)
+资源记录的格式：
+
+TTL 600;
+
+NAME	[TTL]   	IN			RRT		VALUE
+www.magedu.com.		IN			A		1.1.1.1
+
+
+1.1.1.1				IN			PTR		www.magedu.com.
+
+
+资源记录类型：
+SOA(Start Of Authority): 
+	ZONE NAME	TTL		IN		SOA		FQDN	ADMINISTRATOR_MAILBOX (
+						serial number
+						refresh
+						retry
+						expire
+						na ttl )
+	时间单位：M（分钟）、H（小时）、D（天）、W（周），默认单位是秒
+	邮箱格式：admin@magedu.com -写为-> admin.magedu.com
+	
+	magedu.com.		600		IN		SOA		ns1.magedu.com.		admin.magedu.com. (
+						2013040101
+						1H
+						5M
+						1W
+						1D )
+NS(Name Server): ZONE NAME --> FQDN
+	magedu.com.		600		IN		NS		ns1.magedu.com.
+	magedu.com.		600		IN		NS		ns2.magedu.com.
+	ns1.magedu.com.	600		IN		A		1.1.1.2
+	ns2.magedu.com.	600		IN		A		1.1.1.5
+MX(Mail eXchanger): ZONE NAME --> FQDN
+	ZONE NAME	TTL		IN		MX  pri		VALUE
+	优先级：0-99，数字越小级别越高
+		magedu.com.	600		IN		MX	10	mail.magedu.com.
+		mail.magedu.com.	600		IN	A	1.1.1.3
+A（address）：	FQDN-->IPv4	
+AAAA：FQDN-->IPv6
+PTR(pointer)：IP-->FQDN
+CNAME(Canonical NAME): FQDN-->FQDN
+	www2.magedu.com.		IN		CNAME		www.magedu.com.
+TXT
+CHAOS
+SRV
+
+
+
+
+域：Domain
+区域：Zone
+
+
+.com
+magedu.com.		IN		NS		ns.magedu.com.
+ns.magedu.com.	IN		A		192.168.0.10
+
+
+magedu.com.   192.168.0.0/24
+
+www		192.168.0.1
+mail	192.168.0.2, MX
+
+建立两个区域文件：
+正向区域文件
+magedu.com.		IN		SOA	
+
+www.maged.com.	IN	A	192.168.0.1
+简写为：
+www			IN	A	192.168.0.1
+
+	
+反向区域文件：
+0.168.192.in-addr.arpa.		IN	SOA	
+
+1.0.168.192.in-addr.arpa.		IN	PTR		www.magedu.com.
+1		IN		PTR		www.magedu.com.
+
+
+区域传送的类型：
+	完全区域传送: axfr 
+	增量区域传送：ixfr
+	
+区域类型：
+	主区域：master
+	从区域：slave
+	提示区域：hint
+	转发区域：forward
+
+.com.	
+
+magedu.com.
+
+DNS资源记录类型及意义：
+SOA：起始授权记录
+NS：名称服务器
+MX：邮件交换器
+CNAME：别名记录
+A：FQDN-->IPv4
+AAAA: FQDN-->IPv6
+PTR：IP-->FQDN
+
+
+递归：请求一次
+迭代：请求多次，参考答案
+
+
+DNS服务器类型：
+	主
+	辅助
+	缓存
+	转发器
+	
+ZONE DOMAIN
+
+SOA:
+	
+
+mageedu.com		172.16.100.0/24
+
+ns	172.16.100.1
+www	172.16.100.1, 172.16.100.3
+mail	172.16.100.2
+ftp     www
+
+
+
+DNS：BIND
+	Berkeley Internet Name Domain
+	
+	ISC
+	
+bind97：
+	/etc/named.conf
+		BIND进程的工作属性
+		区域的定义
+	/etc/rndc.key
+		rndc: Remote Name Domain Controller
+		密钥文件 
+		配置信息：/etc/rndc.conf
+		
+	/var/named/
+		区域数据文件
+
+	/etc/rc.d/init.d/named
+		{start|stop|restart|status|reload}
+		
+	二进制程序：named
+
+bind-chroot:
+	默认：named
+		用户：named
+		组：named
+		
+	/var/named/chroot/
+		etc/named.conf
+		etc/rdnc.key
+		sbin/named
+		var/named/
+		
+				
+缓存-->主-->从
+
+
+	named-checkconfig
+	name-checkzone
+	
+	
+
+dig: Domain Information Gropher
+
+
+DNS: 
+	监听的协议及端口：
+		53/udp
+		53/tcp
+		953/tcp, rndc
+		
+		
+SOCKET: 套接字
+	IP:PORT
+	
+	C/S： Client/Server
+		172.16.100.1:53
+		
+	192.168.0.13
+		
+		192.168.0.12:53 
+		172.16.100.1:53
+		0.0.0.0:53
+
+区域：
+zone "ZONE NAME" IN {
+	type {master|slave|hint|forward};
+	
+};
+
+主区域：
+	file "区域数据文件";
+	
+从区域：
+	file "区域数据文件";
+	masters { master1_ip; };
+	
+
+
+临时性地关闭SELinux:
+# getenforce
+Enforcing
+
+# setenforce 0
+# setenforce 1
+
+
+永久关闭：
+# vim /etc/selinux/config
+
+
+
+dig -t RT NAME @IP
+
+dig -t NS mageedu.com
+
+dig -x IP: 
+	根据IP查找FQDN
+	
+host -t RT NAME: 查询名称的解析结果
+
+nslookup: 交互式
+nslookup>
+		server IP
+		set q=RT
+		NAME
+		
+
+100.16.172.in-addr.arpa
+
+BIND, named, DNS
+
+named: named.named
+
+resoving:
+	数据文件
+		IP-->FQDN
+		ZONE NAME --> NS, MX
+		
+	查询：stub resolver
+		递归
+	
+	缓存功能：
+	
+DNS RT
+	$TTL 宏
+	$ORIGIN mageedu.com.
+	$GENERATE
+	NAME	[TTL]	IN	RT		VALUE	
+SOA：
+	@	IN	SOA		MASTER_NS_SERVER_FQDN	ADMIN_MAILBOX （
+	
+	）
+NS：
+	@	IN	NS	NS_SERVER_FQDN
+MX:
+	@	IN	MX  pri	MX_SERVER_FQDN
+A
+AAAA
+PTR
+CNAME
+	Alias	IN	CNAME	FQDN
+
+
+named: /usr/sbin/named 
+	SOCKET  IP:PORT
+		tcp
+		udp
+			被打开
+			
+	/etc/named.conf
+
+/etc/rc.d/init.d/functions
+/etc/rc.d/init.d/named   /etc/sysconfig/named
+
+service named start
+
+bind 
+named, named
+
+bind97
+
+dig:
+	aa: Authority Answer
+	
+泛域解析：
+	*.mageedu.com.		IN	A	
+
+axfr: 完全区域传送 
+ixfr：增量区域传送
+
+区域：
+	主、从
+	
+
+rndc: 
+
+正向区域：
+SUB_ZONE_NAME	IN	NS	NSSERVER_SUB_ZONE_NAME
+NSSERVER_SUB_ZONE_NAME	IN	A	IP
+
+
+
+.com
+mageedu.com.		IN		NS		ns1.mageedu.com.
+					IN		NS		ns2.mageedu.com.
+ns1.mageedu.com.	IN		A		172.16.100.1
+ns2.magedu.com.		IN		A		172.16.100.2
+
+
+dig -t A www.baidu.com  @172.16.100.1
+
+.
+
+.com
+
+.com
+magedu.com.
+
+
+
+
+mageedu.com.
+fin.mageedu.com.		IN		NS		ns1.fin.mageedu.com.
+fin.mageedu.com.		IN		NS		ns2.fin.mageedu.com.
+ns1.fin.mageedu.com.	IN		A		172.16.100.8
+ns2.fin.mageedu.com.	IN		A		172.16.100.9
+
+market.mageedu.com.		IN		NS		ns1.market.mageedu.com.
+ns1.market.mageedu.com.	IN		A		172.16.100.108
+
+
+forward {only|first}
+forwarders {};
+
+zone "ZONE_NAME" IN {
+	type forward;
+	
+};
