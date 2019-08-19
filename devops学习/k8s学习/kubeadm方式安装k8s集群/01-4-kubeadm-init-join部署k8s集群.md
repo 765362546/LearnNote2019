@@ -106,6 +106,34 @@
 
 ```                
 
+#### 执行结果分析
+
+  - 命令执行后，先进行 preflight ,警告了docker本身的一些问题，可以忽略，然后去下载镜像
+  - preflight 之后，执行 kubelet-start, 为kubelet设置环境信息和配置文件，然后启动kubelet
+  - 为各个组件生成证书
+    - 先生成了ca自签证书
+    - 生成apiserver私钥和证书--证书中签发给了apiserver的域名和ip
+    - 生成etcd使用的 ca/server/peer/healthcheck-client 证书
+    - 生成 apiserver-etcd-client 证书---用于apiserver与etcd通信
+    - 生成 front-proxy-ca 
+    - 生成 front-proxy-client
+    - 生成 sa
+  - 为k8s各个组件生成kubeconfig文件
+    - admin.conf
+    - kubelet.conf
+    - controller-manager.conf
+    - scheduler.conf
+  - 为k8s各个组件生成清单(yaml)，主要包括apiserver/controller-manager/scheduler
+  - 为etcd生成配置清单
+  - 之后是执行这些配置清单，并检查状态
+  - 配置bootstrap-token相关，用于为节点自动生成证书等信息----比较复杂，待进一步了解
+  - 配置组件 coredns和kube-proxy
+  - 到上边一步，k8s集群初始化已经完成，然后打印出来接下来需要做的--需要根据实际需要，手动执行
+  - 为kubectl配置默认kubeconfig
+  - 为k8s集群配置 网络插件  ---虽然是插件，但是是必须的 参考 <https://kubernetes.io/docs/concepts/cluster-administration/addons/>
+  - 网络插件安装好之后，接口将节点加入进集群中来,即 kubeadm join,打印出的命令，包含了一些认证信息，并且是有时效的,后续补充说明手动生成这些信息
+
+
 ### 为kubectl配置默认kubeconfig
 
 ``` bash
@@ -115,14 +143,47 @@
   chown $(id -u):$(id -g) $HOME/.kube/config
   # 执行完这些后，kubectl命令才能正常使用
   # 实际上，kubectl可以安装到任意一台能访问到apiserver的电脑上，包括windows，使用参数 --kubeconfig= 指定使用的认证文件---后边会专门描述这个认证文件
+
+  # 此时使用kubectl get nodes 查看节点状态，可以看到主节点处于NotReady状态，这是因为还没安装网络插件
 ```
 
+### 为k8s集群配置网络插件---这里使用flannel
+
+- 参考 < https://github.com/coreos/flannel>
+- 下载kube-flannel.yml
+``` bash
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+```
+- 编辑kube-flannel.yml
+``` bash
+  # 在net-conf.json 段，配置 Network 为之前kubeadm init时 使用的pod网络 如 10.0.0.0/8 ,另外，还有一些其他参数，可以用于优化pod网络
+  # 文件中 image: quay.io/coreos/flannel:v0.11.0-amd64 指的是使用的镜像
+  # 对于k8s使用的yaml文件的语法的说明，后续单独说明
+  vim kube-flannel.yml
+  ...
+  net-conf.json: |
+      {
+            "Network": "10.0.0.0/8",
+                  "Backend": {
+                          "Type": "vxlan"
+                   }
+       }
+  ...
+```
+- 应用flannel网络插件
+``` bash
+  kubectl apply -f kube-flannel.yaml
+  # 可以通过 kubectl get nodes  查看节点状态，Ready表示应用成功
+  # 可以通过 kubectl get pods -n kube-system 查看pod状态，可以看到flannel是running
+  # 如果失败，可以通过kubectl describe pod -n kube-system pod_name 查看详细信息
+```
 
 ### 执行 kubeadm join (node节点)
 
 ``` bash
   kubeadm join 192.168.36.109:6443 --token q42m82.2avd3k7uf2r3x6d3 \
   105                 --discovery-token-ca-cert-hash sha256:ae41fb39837a7ee8f806f51ac6688c2207a9afc2555    c63188aed288839ac7777
+  # 节点执行命令之后，可以在主节点通过kubectl get nodes 查看节点状态
 ```
 
 
