@@ -2,7 +2,7 @@
 
 ---
 
-## 在master节点上执行kubeadm init
+## kubeadm init 和 kubeadm join
 
 ### 概述
 - 使用 kubeadm init --help 查看帮助信息
