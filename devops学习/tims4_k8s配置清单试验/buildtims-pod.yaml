@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: buildtims-pod
+  namespace: default
+spec:
+  containers:
+  - name: buildtims-pod
+    image: maven:3.6.1-jdk-8
+    imagePullPolicy: IfNotPresent
+    command: ["/bin/bash","-c","bash build.sh" ]
+    volumeMounts:
+    - mountPath: /buildtims
+      name: buildtims
+    workingDir: /buildtims
+  nodeName: node2
+  volumes:
+  - hostPath:
+      path: /opt/buildtims
+      type: ""
+    name: buildtims

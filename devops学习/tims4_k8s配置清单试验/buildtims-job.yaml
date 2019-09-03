@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: buildtims
+  namespace: default
+spec:
+  template:
+    metadata:
+    spec:
+      nodeName: node2
+      restartPolicy: Never
+      containers:
+      - name: buildtims
+        image: maven:3.6.1-jdk-8
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: buildtims
+          mountPath: /buildtims
+        workingDir: /buildtims
+        command: ["/bin/bash","-c","bash build.sh" ]
+        #command: ["ls"]
+      volumes:
+      - name: buildtims
+        hostPath:
+          path: /opt/buildtims
