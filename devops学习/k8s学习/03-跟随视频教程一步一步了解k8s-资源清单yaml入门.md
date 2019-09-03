@@ -309,5 +309,15 @@ pod "pod-demo" deleted
       - 默认值，如果镜像版本(tag)是latest，默认值是Always;否则，默认值是IfNotPresent
       - 在资源清单里设置这个之后，就不按照默认值了;比如设置为IfNotPresent之后，即使tag是latest，如果已存在镜像，也不会去拉取了
       - ports <[]Object> 对象列表，可以多个 这里仅仅是给出信息，并不能控制容器暴露或者不暴露端口；配置上这一项，可以在别的地方直接引用它的名称
+      - command与args
+        - command 对应镜像中的entrypoint
+        - args 对应镜像中的cmd
+        - 参考官网 https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
+        - 如果定义了command，则镜像中的entrypoint和command都不起作用
+        - 如果没定义command，则使用镜像中的entrypoint；并且，如果定义了args，就用args，不用镜像中的cmd
+        - 我的理解，pod里定义的command优先级最高，只要有这个，镜像里面的entrypoint和cmd都无效了；同时，如果没传args，容器中执行的就是command，如果定义了args，容器中执行的就是command + args
+        - 我的理解，续，如果没定义command，就使用镜像中的entrypoint，如果定义了args，容器中就是entrypoint+args;如果没定义，那就是entrypoint+cmd
+        - 注意：entrypoint，不是在shell里执行---这是docker里面的知识点
+        
 
     
