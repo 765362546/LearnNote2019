@@ -175,5 +175,139 @@ spec:
         - "/bin/sh"
         - "-c"
         - "sleep 3600"
+        
+ # 最后四行，等价于 command: ["/bin/sh","-c","sleep 3600"]       
 
 ``` 
+
+- 通过资源清单创建资源 命令 kubectl create -f FILENAME [options]  (后边说说明apply命令)
+```bash
+[root@master test]# kubectl create -f pod-demo.yaml  #通过create命令创建资源
+pod/pod-demo created
+[root@master test]# kubectl get pods                 #查看判断，可以看到pod-demo包含两个容器，并且状态都是已运行
+NAME       READY   STATUS    RESTARTS   AGE
+pod-demo   2/2     Running   0          7s
+[root@master test]# kubectl describe pod pod-demo    #通过describe命令，查看pod的详细信息
+Name:         pod-demo                               #pod名称 
+Namespace:    default                                #pod所在的名称空间
+Priority:     0
+Node:         node3/192.168.36.107                   #pod所在的节点
+Start Time:   Tue, 03 Sep 2019 14:29:25 +0800
+Labels:       app=myapp                              #pod包含的标签
+              tier=fronted
+Annotations:  cni.projectcalico.org/podIP: 10.0.3.15/32 #pod网络相关，可以看出，下面的两个容器，共用一个ip
+Status:       Running
+IP:           10.0.3.15
+Containers:                                           #分别列出两个容器的信息
+  myapp-web:
+    Container ID:   docker://5188a5f2a2a9ffcd3fecfae904d01c5a11425632db780d6365be6baac334d199
+    Image:          nginx:1.17.3-alpine
+    Image ID:       docker-pullable://nginx@sha256:b9c2c032a6f282c914a8c8fab52994b4ad7940794971fe9766fb7b2ca8da8868
+    Port:           <none>
+    Host Port:      <none>
+    State:          Running
+      Started:      Tue, 03 Sep 2019 14:29:27 +0800
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-b622t (ro)
+  myapp-client:
+    Container ID:  docker://9fce33d7445c5be36d1e72a201846afa47444e573c49182433a4d9aef226e2a0
+    Image:         busybox:latest
+    Image ID:      docker-pullable://busybox@sha256:9f1003c480699be56815db0f8146ad2e22efea85129b5b5983d0e0fb52d9ab70
+    Port:          <none>
+    Host Port:     <none>
+    Command:
+      /bin/sh
+      -c
+      sleep 3600
+    State:          Running
+      Started:      Tue, 03 Sep 2019 14:29:29 +0800
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from default-token-b622t (ro)
+Conditions:
+  Type              Status
+  Initialized       True
+  Ready             True
+  ContainersReady   True
+  PodScheduled      True
+Volumes:
+  default-token-b622t:
+    Type:        Secret (a volume populated by a Secret)
+    SecretName:  default-token-b622t
+    Optional:    false
+QoS Class:       BestEffort
+Node-Selectors:  <none>
+Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                 node.kubernetes.io/unreachable:NoExecute for 300s
+Events:                                                       # 列出pod运行的事件，下面详细解释
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  79s   default-scheduler  Successfully assigned default/pod-demo to node3   #调度到node3
+  Normal  Pulled     79s   kubelet, node3     Container image "nginx:1.17.3-alpine" already present on machine  #根据默认的镜像拉取策略，发现已存在这个镜像
+  Normal  Created    79s   kubelet, node3     Created container myapp-web       #创建容器
+  Normal  Started    78s   kubelet, node3     Started container myapp-web       #启动容器
+  Normal  Pulling    78s   kubelet, node3     Pulling image "busybox:latest"    #根据默认的镜像拉取策略，拉取busybox镜像
+  Normal  Pulled     77s   kubelet, node3     Successfully pulled image "busybox:latest"  #镜像拉取成功
+  Normal  Created    77s   kubelet, node3     Created container myapp-client      #创建容器
+  Normal  Started    76s   kubelet, node3     Started container myapp-client      #启动容器
+
+[root@master test]# curl 10.0.3.15     #上面创建的pod提供了nginx服务，通过pod地址访问一下
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+...
+
+```
+
+- 通过logs命令查看容器日志
+```bash
+[root@master test]#  kubectl logs --help    
+ kubectl logs [-f] [-p] (POD | TYPE/NAME) [-c CONTAINER] [options]  #根据pod内容器的数量不通，部分参数可以省略
+ 
+[root@master test]# kubectl logs pod-demo myapp-web   # 通过logs命令，查看容器的日志
+192.168.36.107 - - [03/Sep/2019:06:36:22 +0000] "GET / HTTP/1.1" 200 612 "-" "curl/7.29.0" "-"
+```
+
+- 通过exec命令在容器中执行命令 kubectl exec (POD | TYPE/NAME) [-c CONTAINER] [flags] -- COMMAND [args...] [options]
+```bash
+#最常用的就是进入到容器的shell中，然后在执行其他命令
+[root@master test]# kubectl exec pod-demo -c myapp-client  -it -- /bin/sh
+/ #
+#然后就可以在容器中执行命令
+```
+
+- 通过资源清单删除资源  命令 kubectl delete ([-f FILENAME] | [-k DIRECTORY] | TYPE [(NAME | -l label | --all)]) [options]
+```bash
+[root@master test]# kubectl delete -f pod-demo.yaml
+pod "pod-demo" deleted
+#通过kubectl get pods 命令可以查看到pod已经没了
+#kubectl delete 也可以删除其他资源
+```
+
+- 通过apply命令创建资源
+  - 声明式创建资源，与create不同的是，apply会比较要创建的资源与现有资源，如果不存在，就创建，此时跟create没区别，如果存在，会将已有资源升级到新的资源清单里描述的内容
+  - 我的理解，能用apply的就用apply
+
+- 通过edit命令修改资源  kubectl edit (RESOURCE/NAME | -f FILENAME) [options]
+  - 类似于打开一个vim界面，直接编辑内容，编辑之后，会立即生效----部分资源不支持这种方式
+
+## 整理
+
+  - 资源清单格式
+    - 一级字段： apiVersion(group/version),kind,metadata(name,namespace,labels,annotations,...),spec,status(只读)
+  - Pod资源
+    - pods.spec.containers <[]Object>  
+      - 数组，可以包含多个容器
+      - imagePullPolicy: Always 总是下载,;Never 从不下载;IfNotPresent 没有就下载
+      - 默认值，如果镜像版本(tag)是latest，默认值是Always;否则，默认值是IfNotPresent
+      - 在资源清单里设置这个之后，就不按照默认值了;比如设置为IfNotPresent之后，即使tag是latest，如果已存在镜像，也不会去拉取了
+      - ports <[]Object> 对象列表，可以多个 这里仅仅是给出信息，并不能控制容器暴露或者不暴露端口；配置上这一项，可以在别的地方直接引用它的名称
+
+    
