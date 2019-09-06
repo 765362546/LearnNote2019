@@ -319,5 +319,41 @@ pod "pod-demo" deleted
         - 我的理解，续，如果没定义command，就使用镜像中的entrypoint，如果定义了args，容器中就是entrypoint+args;如果没定义，那就是entrypoint+cmd
         - 注意：entrypoint，不是在shell里执行---这是docker里面的知识点
         
+  - 标签 
+    - 标签组成 格式为key=value   
+      - key和value都是标签的一部分，被标签过滤器使用时，可以使用包含某某key的，或者某某key的值为多少多少的----即包含这个属性的，包含这个属性并且值为多少多少的
+      - key： 字母数字 _-.  不能超253个字符
+      - value  可以为空 
+    - 显示/查询
+      - 显示所有标签kubectl get pods --show-lables
+      - 显示标签的key为xx的value   kubectl get pods -L app   #显示key=app的value的值
+      - 通过标签选择器查询 (标签过滤器)  kubectl get pods -l app --show-labels   # -l命令支持多个参数，用逗号分隔，表示 且 的关系，比如  -l app=pod,ver=xx
+      
+    - 打标签命令 kubectl label 资源类别 资源名称  key=value  如： kubectl label pod pod-demo release=stable
+      - 如果对已有的标签重新赋值，加上 --overwrite 参数
+      
+    - 标签选择器
+      - 各种控制器都是通过标签选择器来选择pod
+      - 标签选择
+        - 等值关系的: =  == !=
+        - 集合关系的: 
+          - key in (value1,value2)
+          - key notin (value1,value2,...)
+          - !key
+      - 许多资源支持内嵌字段定义其使用的标签选择器
+        - matchLabels  直接给定键值
+        - matchExpressions  基于给定的表达式来定义使用的标签选择器 {key:"KEY",operator:"OPERATOR",values:[VAL1,VAL2]}
+          - 操作符： 
+            - In  NotIn: values字段必须非空列表
+            - Exists,NotExists : values字段必须为空
+            
+      - nodeSelector 节点标签选择器   
+        - 可以给节点添加标签，比如distype=ssd  指定某些节点有固态硬盘，然后创建pod时，指定使用节点标签选择器，选择具有ssd的
+  
+- 注解 annotations
+  - 与lables不同的地方在于，它不能用于挑选资源对象，仅为对象提供元数据，而且不限制长度-----部分资源调用是会检查是否有某些注解
+   
+      
+        
 
     
